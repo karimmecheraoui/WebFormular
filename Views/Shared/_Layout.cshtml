@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - RWE E-Mail Tool</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+
+<body>
+
+<header>
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+        <div class="container-fluid">
+
+            <!-- ✅ TEXT (WICHTIG – DAS HAT DIR GEFEHLT) -->
+            <a class="navbar-brand text-warning fw-bold"
+               asp-controller="Incident"
+               asp-action="Create">
+                RWE E-Mail Tool
+            </a>
+            <button class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- ✅ NAV LINKS -->
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav ms-auto">
+
+                    <li class="nav-item">
+                        <a class="nav-link text-white"
+                           asp-controller="Incident"
+                           asp-action="Index">
+                            Übersicht
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white"
+                           asp-controller="Incident"
+                           asp-action="Create">
+                            Neuer Vorfall
+                        </a>
+                    </li>
+                        <li class="nav-item">
+                            <button id="darkModeBtn" class="btn btn-outline-light btn-sm ms-3">
+                                🌙 Dark Mode
+                            </button>
+                        </li>
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+</header>
+
+
+<!-- CONTENT -->
+<div class="container">
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
+</div>
+
+<!-- FOOTER -->
+<footer class="text-center text-muted mt-4 mb-3">
+    Internal Tool © 2026
+</footer>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+@RenderSection("Scripts", required: false)
+    <script>
+        document.getElementById("darkModeBtn").addEventListener("click", function () {
+
+            document.body.classList.toggle("dark");
+
+        });
+    </script>
+
+</body>
+</html>

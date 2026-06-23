@@ -1,0 +1,29 @@
+﻿@model List<WebformularFuerMit.Models.Incident>
+
+<h2>📋 Incident Übersicht</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Incident</th>
+            <th>Status</th>
+            <th>Title</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var inc in Model)
+        {
+            <tr>
+                <td>@inc.IncidentNumber</td>
+                <td>@inc.Status</td>
+                <td>@inc.Title</td>
+                <td>
+                    <a href="/Incident/Edit?id=@inc.IncidentNumber" class="btn btn-sm btn-primary">
+                        ✏️ Update
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

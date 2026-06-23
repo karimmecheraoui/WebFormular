@@ -1,0 +1,313 @@
+﻿@model WebformularFuerMit.Models.Incident
+<div class="mb-3">
+    <label>ServiceNow Ticket URL</label>
+    <input id="ticketUrl" class="form-control" placeholder="Paste ServiceNow Link here..." />
+    <button type="button" onclick="checkForm()" class="btn btn-warning">
+        🔍 Überprüfen
+    </button>
+
+</div>
+<div class="container mt-4">
+
+    <div class="card shadow-lg p-4">
+
+        <h2 class="text-primary">🚨 Major Incident Tool</h2>
+        <div class="mb-3">
+            <a href="/Incident/List" class="btn btn-primary">
+                📋 Alle Incidents anzeigen
+            </a>
+        </div>
+        <form method="post" asp-action="Send">
+            <div class="row">
+                <div class="col-md-4">
+                    <label>Ticket</label>
+                    <input asp-for="IncidentNumber" class="form-control" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Priority</label>
+                    <select name="Priority" id="prioritySelect" class="form-control">
+
+                        @foreach (var p in ViewBag.Priorities)
+                        {
+                            <option value="@p.Name">@p.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label>Status</label>
+                    <select asp-for="Status" id="statusSelect" class="form-control">
+                        <option>Open</option>
+                        <option>In Progress</option>
+                        <option>Resolved</option>
+                    </select>
+                </div>
+            </div>
+
+            <br />
+
+            <div class="mb-3">
+                <label>Title</label>
+                <input asp-for="Title" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Description</label>
+                <textarea asp-for="Description" class="form-control"></textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label>Vorlage</label>
+
+                <select id="templateSelect" class="form-control">
+                    <option value="">-- auswählen --</option>
+
+                    <option value="A Major Incident Bridge Call has been opened. The Major Incident is currently being investigated.">
+                        Bridge Call opened
+                    </option>
+
+                    <option value="A Major Incident Bridge Call has been opened. The Major Incident is currently being investigated by all needed resolving teams.">
+                        Bridge + Teams investigating
+                    </option>
+
+                    <option value="The Major Incident is currently being investigated.">
+                        Investigation running
+                    </option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label>Incident Lead</label>
+
+                <select id="leadSelect" class="form-control">
+                    <option value="">-- auswählen --</option>
+
+                    <option>Christian Bach</option>
+                    <option>Dieter Sulewski</option>
+                    <option>Greg Bahr</option>
+                    <option>Jan Pfeil</option>
+                    <option>Jörg Kunze</option>
+                    <option>Miloud Aheroud</option>
+                    <option>Patrick Koch</option>
+                    <option>Sasa Kucan</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label>Next Update</label>
+
+                <select id="timeSelect" class="form-control">
+                    <option value="">-- auswählen --</option>
+                    <option>1h</option>
+                    <option>4h</option>
+                    <option>8h</option>
+                    <option>12h</option>
+                </select>
+            </div>
+
+           
+            <div class="mb-3">
+                <label>Update</label>
+                <textarea asp-for="UpdateText" class="form-control"></textarea>
+            </div>
+
+            <hr />
+
+            <h5>📧 Distribution Lists</h5>
+
+            <div class="row">
+                @foreach (var dist in ViewBag.DistributionLists)
+                {
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   name="selectedLists"
+                                   value="@dist.Email"
+                                   class="form-check-input" />
+
+                            <label class="form-check-label">
+                                @dist.Name
+                            </label>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <br />
+
+            <div class="d-flex justify-content-between">
+
+                <!-- ✅ PREVIEW -->
+                <button type="submit"
+                        formaction="/Incident/Send?preview=true"
+                        class="btn btn-secondary">
+                    👁 Preview
+                </button>
+
+                <!-- ✅ SEND -->
+                <button type="submit" class="btn btn-success">
+                    🚀 Send Mail
+                </button>
+
+            </div>
+            
+
+            
+
+        </form>
+
+    </div>
+
+</div>
+<script>
+    const prioritySelect = document.getElementById("prioritySelect");
+    const statusSelect = document.getElementById("statusSelect");
+
+    prioritySelect.addEventListener("change", function () {
+
+        let priority = this.value;
+
+        // ✅ Status resetten
+        statusSelect.innerHTML = "";
+
+        if (priority === "P2") {
+            // ✅ nur diese zwei erlauben
+            addOption("Open");
+            addOption("Resolved");
+        } else if (priority === "P1") {
+            // ✅ alle Optionen
+            addOption("Open");
+            addOption("In Progress");
+            addOption("Resolved");
+            addOption("Update");
+        } else {
+            // fallback
+            addOption("Open");
+            addOption("Resolved");
+        }
+    });
+
+    function addOption(text) {
+        let option = document.createElement("option");
+        option.text = text;
+        option.value = text;
+        statusSelect.appendChild(option);
+    }
+</script>
+<script>
+    document.getElementById("ticketUrl").addEventListener("input", function () {
+
+        let text = this.value;
+
+        // ✅ INC finden
+        let incMatch = text.match(/INC\d+/);
+
+        if (incMatch) {
+            document.querySelector("[name='IncidentNumber']").value = incMatch[0];
+        }
+
+        // ✅ OPTIONAL: Status ableiten (simple Logik)
+        if (text.toLowerCase().includes("resolved")) {
+            document.querySelector("[name='Status']").value = "Resolved";
+        }
+    });
+</script>
+<script>
+    function generateAI() {
+
+        // ✅ Daten aus deinem Formular holen
+        let incident = document.querySelector("[name='IncidentNumber']").value;
+        let priority = document.getElementById("prioritySelect").value;
+        let status = document.getElementById("statusSelect").value;
+        let description = document.querySelector("[name='Description']").value;
+
+        // ✅ professioneller Prompt
+        let prompt = `
+    Create a professional IT incident update.
+
+    Ticket: ${incident}
+    Priority: ${priority}
+    Status: ${status}
+
+    Description:
+    ${description}
+
+    Write a clear, short, and professional update for stakeholders.
+    `;
+
+        // ✅ AI URL (HIER DEIN LINK!)
+        let aiUrl = "https://ai.rwe.com/chat";
+
+        // ✅ öffnen
+        window.open(aiUrl, "_blank");
+
+        // ✅ Prompt in Zwischenablage speichern
+        navigator.clipboard.writeText(prompt);
+
+        alert("Prompt wurde kopiert! → Einfach in AI einfügen (Strg+V)");
+    }
+</script>
+<script>
+
+    // TEMPLATE → Update Feld
+    document.getElementById("templateSelect").addEventListener("change", function () {
+
+        let text = this.value;
+
+        if (text) {
+            document.querySelector("[name='UpdateText']").value = text;
+        }
+    });
+
+
+    // INCIDENT LEAD → automatisch ergänzen
+    document.getElementById("leadSelect").addEventListener("change", function () {
+
+        let lead = this.value;
+
+        if (lead) {
+            let update = document.querySelector("[name='UpdateText']");
+            update.value += "\n\nIncident Lead: " + lead;
+        }
+    });
+
+
+    // TIME → automatisch anhängen
+    document.getElementById("timeSelect").addEventListener("change", function () {
+
+        let time = this.value;
+
+        if (time) {
+            let update = document.querySelector("[name='UpdateText']");
+            update.value += "\nNext update in: " + time;
+        }
+    });
+
+</script>
+<script>
+    function checkForm() {
+
+        let errors = [];
+
+        let incident = document.querySelector("[name='Incedent']").value;
+        let title = document.querySelector("[name='Title']").value;
+        let update = document.querySelector("[name='UpdateText']").value;
+
+        if (!incident) {
+            errors.push("Incident Nummer fehlt");
+        }
+
+        if (!title) {
+            errors.push("Title fehlt");
+        }
+
+        if (!update) {
+            errors.push("Update Text fehlt");
+        }
+
+        if (errors.length > 0) {
+            alert("❌ Fehler:\n\n" + errors.join("\n"));
+        } else {
+            alert("✅ Alles korrekt ausgefüllt!");
+        }
+    }
+</script>
